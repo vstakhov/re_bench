@@ -66,15 +66,20 @@ main(int argc, char **argv)
     re_str = argv[i++];
     len = strlen(re_str);
 
-    p = (char *) malloc(len + 1 + sizeof("()") - 1);
+    p = (char *) malloc(len + 1 + sizeof("(?ms)()") - 1);
     if (p == NULL) {
         return 2;
     }
 
     p[0] = '(';
-    memcpy(&p[1], re_str, len);
-    p[len + 1] = ')';
-    p[len + 2] = '\0';
+    p[1] = '?';
+    p[2] = 's';
+    p[3] = 'm';
+    p[4] = ')';
+    p[5] = '(';
+    memcpy(&p[6], re_str, len);
+    p[len + 6] = ')';
+    p[len + 7] = '\0';
 
     //printf("regex: %s\n", p);
 

@@ -23,7 +23,8 @@ static void run_engines(pcre *re, unsigned engine_types, int ncaps,
 enum {
     ENGINE_DEFAULT = (1 << 0),
     ENGINE_JIT     = (1 << 1),
-    ENGINE_DFA     = (1 << 2)
+    ENGINE_DFA     = (1 << 2),
+    MATCH_LIMIT    = 0,
 };
 
 
@@ -187,11 +188,13 @@ run_engines(pcre *re, unsigned engine_types, int ncaps,
 
         printf("pcre default ");
 
-        extra = pcre_study(re, 0, &errstr);
+        extra = pcre_study(re, PCRE_DOTALL | PCRE_MULTILINE, &errstr);
         if (errstr != NULL) {
             fprintf(stderr, "failed to study the regex: %s", errstr);
             exit(2);
         }
+
+        extra->match_limit = MATCH_LIMIT;
 
         TIMER_START
 
@@ -240,6 +243,7 @@ run_engines(pcre *re, unsigned engine_types, int ncaps,
             fprintf(stderr, "failed to study the regex: %s", errstr);
             exit(2);
         }
+        extra->match_limit = MATCH_LIMIT;
 
         TIMER_START
 

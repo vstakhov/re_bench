@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 
+export PATH=/opt/tcc/bin:$PATH
 #E='valgrind --leak-check=full --quiet'
 E=
 
-$E ./sregex --thompson --thompson-jit --pike $1 $2
-
-./re1 --thompson --pike $1 $2
+#$E ./sregex --thompson --thompson-jit --pike $1 $2
+$E ./sregex --pike $1 $2
 
 $E ./pcre --default --jit --dfa $1 $2
 
 $E ./re2 $1 $2
+
+rm -f dfa.out
+cd ..
+./re.pl --timing --cc="clang -O3" -o bench/dfa.out $1 a > /dev/null || exit 1
+cd bench
+./dfa.out < $2
+
+#./re1 --thompson --pike $1 $2
 

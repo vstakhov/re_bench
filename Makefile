@@ -10,7 +10,9 @@ PCRE_INC=/opt/pcre/include
 CFLAGS= -c -Wall -Werror -O3 -g
 CXXFLAGS= -c -Wall -Werror -O3 -g
 REGEX1=
-FILE1=abc.txt
+FILE_ABC=abc.txt
+FILE_RAND_ABC=rand-abc.txt
+FILE_DELIM=delim.txt
 
 .PHONY: all test
 
@@ -34,12 +36,37 @@ pcre: pcre.o
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -I$(RE2_INC) $<
 
-test: all $(FILE1)
-	./bench '(?:a|b)aa(?:aa|bb)cc(?:a|b)' $(FILE1)
+test: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
+	#./bench '(?:a|b)aa(?:aa|bb)cc(?:a|b)' $(FILE_ABC)
+	#./bench '(?:a|b)aa(?:aa|bb)cc(?:a|b)abcabcabd' $(FILE_RAND_ABC)
+	#@echo "========================================"
+	./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_ABC)
+	#@echo "========================================"
+	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_RAND_ABC)
+	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_ABC)
+	#./bench 'dfa|efa|ffa|gfa' $(FILE_ABC)
+	#./bench '[d-h]' $(FILE_ABC)
+	#./bench 'dd|ff|ee|gg|hh|ii|jj|kk|[l-n]m|oo|pp|qq|rr|ss|tt|uu|vv|ww|[x-z]y' $(FILE_ABC)
+	#./bench 'd|de' $(FILE_RAND_ABC)
+	#./bench 'd[abc]*?d' $(FILE_DELIM)
+	#./bench 'd.*?d' $(FILE_DELIM)
+	#./bench 'd.*d' $(FILE_DELIM)
+	#./bench 'd' $(FILE_ABC)
 
 clean:
 	rm -rf *.o sregex re1
 
-$(FILE1):
-	perl gen-data.pl
+$(FILE_ABC):
+	perl gen/abc.pl
 
+$(FILE_RAND_ABC):
+	perl gen/rand-abc.pl
+
+$(FILE_DELIM):
+	perl gen/delim.pl
+
+.PHONY: plot
+plot:
+	$(MAKE) test > a.txt
+	perl gen-csv.pl a.txt > a.csv
+	gnuplot bench.gnu
