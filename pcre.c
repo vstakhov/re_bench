@@ -46,7 +46,7 @@ enum {
 int
 main(int argc, char **argv)
 {
-    int                  flags = 0;
+    int                  flags = PCRE_DOTALL | PCRE_MULTILINE;
     unsigned             engine_types = 0;
     unsigned             i;
     int                  err_offset = -1;
@@ -188,7 +188,7 @@ run_engines(pcre *re, unsigned engine_types, int ncaps,
 
         printf("pcre default ");
 
-        extra = pcre_study(re, PCRE_DOTALL | PCRE_MULTILINE, &errstr);
+        extra = pcre_study(re, 0, &errstr);
         if (errstr != NULL) {
             fprintf(stderr, "failed to study the regex: %s", errstr);
             exit(2);
