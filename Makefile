@@ -14,8 +14,7 @@ FILE_ABC=abc.txt
 FILE_RAND_ABC=rand-abc.txt
 FILE_DELIM=delim.txt
 
-.PHONY: all test
-
+.PHONY: all
 all: sregex re1 pcre re2
 
 sregex: sregex.o ../libsregex.a
@@ -36,22 +35,25 @@ pcre: pcre.o
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -I$(RE2_INC) $<
 
-test: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
+.PHONY: bench
+bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
 	#./bench '(?:a|b)aa(?:aa|bb)cc(?:a|b)' $(FILE_ABC)
 	#./bench '(?:a|b)aa(?:aa|bb)cc(?:a|b)abcabcabd' $(FILE_RAND_ABC)
 	#@echo "========================================"
-	./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_ABC)
+	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_ABC)
 	#@echo "========================================"
 	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_RAND_ABC)
 	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_ABC)
 	#./bench 'dfa|efa|ffa|gfa' $(FILE_ABC)
 	#./bench '[d-h]' $(FILE_ABC)
-	#./bench 'dd|ff|ee|gg|hh|ii|jj|kk|[l-n]m|oo|pp|qq|rr|ss|tt|uu|vv|ww|[x-z]y' $(FILE_ABC)
+	./bench 'dd|ff|ee|gg|hh|ii|jj|kk|[l-n]m|oo|pp|qq|rr|ss|tt|uu|vv|ww|[x-z]y' $(FILE_ABC)
 	#./bench 'd|de' $(FILE_RAND_ABC)
 	#./bench 'd[abc]*?d' $(FILE_DELIM)
 	#./bench 'd.*?d' $(FILE_DELIM)
 	#./bench 'd.*d' $(FILE_DELIM)
 	#./bench 'd' $(FILE_ABC)
+	#./bench '[a-zA-Z]+ing' mtent12.txt
+	#./bench '\s[a-zA-Z]{0,12}ing\s' mtent12.txt
 
 clean:
 	rm -rf *.o sregex re1

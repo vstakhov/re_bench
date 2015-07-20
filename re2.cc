@@ -17,7 +17,8 @@
 
 
 static void usage(int rc);
-static void run_engine(RE2 *re, char *input);
+static void run_engine(RE2 *re, char *input, size_t len, int global,
+    int repeat);
 
 
 #define TIMER_START                                                          \
@@ -38,7 +39,7 @@ static void run_engine(RE2 *re, char *input);
 int
 main(int argc, char **argv)
 {
-    int                  i;
+    int                  i, global = 0, repeat = 5;
     RE2                 *re;
     char                *re_str, *p;
     char                *input;
@@ -53,6 +54,20 @@ main(int argc, char **argv)
     for (i = 1; i < argc; i++) {
         if (argv[i][0] != '-') {
             break;
+        }
+
+        if (strncmp(argv[i], "-g", 2) == 0) {
+            global = 1;
+            continue;
+        }
+
+        if (strncmp(argv[i], "--repeat=", sizeof("--repeat=") - 1) == 0) {
+            repeat = atoi(argv[i] + sizeof("--repeat=") - 1);
+            if (repeat <= 0) {
+                repeat = 5;
+            }
+
+            continue;
         }
 
         fprintf(stderr, "unknown option: %s\n", argv[i]);
@@ -81,7 +96,7 @@ main(int argc, char **argv)
     p[len + 6] = ')';
     p[len + 7] = '\0';
 
-    //printf("regex: %s\n", p);
+    //fprintf(stderr, "regex: %s\n", p);
 
     re = new RE2(p);
     if (re == NULL) {
@@ -116,6 +131,8 @@ main(int argc, char **argv)
 
     len = (size_t) rc;
 
+    //fprintf(stderr, "len = %d\n", (int) len);
+
     if (fseek(f, 0L, SEEK_SET) != 0) {
         perror("seek to file beginning");
         return 1;
@@ -144,7 +161,7 @@ main(int argc, char **argv)
         return 1;
     }
 
-    run_engine(re, input);
+    run_engine(re, input, len, global, repeat);
 
     delete re;
     free(input);
@@ -153,21 +170,50 @@ main(int argc, char **argv)
 
 
 static void
-run_engine(RE2 *re, char *input)
+run_engine(RE2 *re, char *input, size_t len, int global, int repeat)
 {
-    bool                 rc;
+    int                  i, matches = 0;
+    bool                 rc = 0;
+    size_t               rest;
     re2::StringPiece     cap;
+    re2::StringPiece     subj;
     struct timespec      begin, end;
-    double               elapsed;
+    double               best = -1;
     const char          *p;
 
-    printf("re2 ");
+    printf("RE2 PartialMatch ");
 
-    TIMER_START
+    for (i = 0; i < repeat; i++) {
+        double elapsed;
 
-    rc = RE2::PartialMatch(input, *re, &cap);
+        matches = 0;
+        rest = len;
+        subj.set(input, len);
 
-    TIMER_STOP
+        TIMER_START
+
+        do {
+            size_t      size;
+
+            rc = RE2::PartialMatch(subj, *re, &cap);
+
+            if (rc) {
+                matches++;
+                p = cap.data();
+                size = cap.size();
+                rest = len - (p - input + size);
+                subj.set(p + size, rest);
+                /* fprintf(stderr, "matched at %d (rc: %d, size: %d)\n", (int) (p - input), (int) rc, (int) cap.size()); */
+            }
+
+        } while (global && rc);
+
+        TIMER_STOP
+
+        if (i == 0 || elapsed < best) {
+            best = elapsed;
+        }
+    }
 
     if (rc) {
         p = cap.data();
@@ -178,13 +224,17 @@ run_engine(RE2 *re, char *input)
         printf("no match");
     }
 
-    printf(": %.02lf ms elapsed.\n", elapsed);
+    printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+           best, matches, repeat);
 }
 
 
 static void
 usage(int rc)
 {
-    fprintf(stderr, "usage: re2 <regexp> <file>\n");
+    fprintf(stderr, "usage: [options] re2 <regexp> <file>\n"
+            "   -g                  enable the global search mode\n"
+            "   --repeat=N          repeat the test for N times; pick the best\n"
+            "                       result. default to 5.\n");
     exit(rc);
 }

@@ -16,8 +16,8 @@
 
 
 static void usage(int rc);
-static void run_engines(pcre *re, unsigned engine_types, int ncaps,
-    const char *input, size_t len);
+static void run_engines(pcre *re, unsigned engine_types, int* ovector,
+    int ovecsize, const char *input, size_t len, int global, int repeat);
 
 
 enum {
@@ -47,6 +47,9 @@ int
 main(int argc, char **argv)
 {
     int                  flags = PCRE_DOTALL | PCRE_MULTILINE;
+    int                  global = 0;
+    int                 *ovector;
+    int                  ovecsize, repeat = 5;
     unsigned             engine_types = 0;
     unsigned             i;
     int                  err_offset = -1;
@@ -82,8 +85,19 @@ main(int argc, char **argv)
         {
             engine_types |= ENGINE_DFA;
 
+        } else if (strncmp(argv[i], "--repeat=", sizeof("--repeat=") - 1)
+                   == 0)
+        {
+            repeat = atoi(argv[i] + sizeof("--repeat=") - 1);
+            if (repeat <= 0) {
+                repeat = 5;
+            }
+
         } else if (strncmp(argv[i], "-i", 2) == 0) {
             flags |= PCRE_CASELESS;
+
+        } else if (strncmp(argv[i], "-g", 2) == 0) {
+            global = 1;
 
         } else {
             fprintf(stderr, "unknown option: %s\n", argv[i]);
@@ -158,8 +172,16 @@ main(int argc, char **argv)
         return 1;
     }
 
-    run_engines(re, engine_types, ncaps, input, len);
+    ovecsize = (ncaps + 1) * 3;
+    ovector = malloc(ovecsize * sizeof(int));
+    if (ovector == NULL) {
+        perror("malloc");
+        return 1;
+    }
 
+    run_engines(re, engine_types, ovector, ovecsize, input, len, global, repeat);
+
+    free(ovector);
     free(input);
     pcre_free(re);
 
@@ -168,25 +190,20 @@ main(int argc, char **argv)
 
 
 static void
-run_engines(pcre *re, unsigned engine_types, int ncaps,
-    const char *input, size_t len)
+run_engines(pcre *re, unsigned engine_types, int *ovector, int ovecsize,
+    const char *input, size_t len, int global, int repeat)
 {
-    int                  i, n;
-    int                  rc;
-    int                 *ovector;
-    size_t               ovecsize;
+    int                  i, n, matches = 0;
+    int                  rc = -1;
+    size_t               rest;
     pcre_extra          *extra;
     struct timespec      begin, end;
-    double               elapsed;
-    const char          *errstr = NULL;
+    double               best = -1;
+    const char          *errstr = NULL, *p;
 
     if (engine_types & ENGINE_DEFAULT) {
 
-        ovecsize = (ncaps + 1) * 3;
-        ovector = malloc(ovecsize * sizeof(int));
-        assert(ovector);
-
-        printf("pcre default ");
+        printf("PCRE interp ");
 
         extra = pcre_study(re, 0, &errstr);
         if (errstr != NULL) {
@@ -196,11 +213,36 @@ run_engines(pcre *re, unsigned engine_types, int ncaps,
 
         extra->match_limit = MATCH_LIMIT;
 
-        TIMER_START
+        for (i = 0; i < repeat; i++) {
+            double elapsed;
 
-        rc = pcre_exec(re, extra, input, len, 0, 0, ovector, ovecsize);
+            matches = 0;
+            p = input;
+            rest = len;
 
-        TIMER_STOP
+            TIMER_START
+
+            do {
+                rc = pcre_exec(re, extra, p, rest, 0, 0, ovector, ovecsize);
+
+                if (rc > 0) {
+                    matches++;
+                    p += ovector[1];
+                    rest -= ovector[1];
+                    /*
+                    fprintf(stderr, "matched at %d (rc: %d, size: %d)\n",
+                            (int) (p - input), rc, ovector[1] - ovector[0]);
+                    */
+                }
+
+            } while (global && rc > 0);
+
+            TIMER_STOP
+
+            if (i == 0 || elapsed < best) {
+                best = elapsed;
+            }
+        }
 
         if (rc == 0) {
             fprintf(stderr, "capture size too small");
@@ -220,23 +262,18 @@ run_engines(pcre *re, unsigned engine_types, int ncaps,
             }
         }
 
-        printf(": %.02lf ms elapsed.\n", elapsed);
+        printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+               best, matches, repeat);
 
         if (extra) {
             pcre_free_study(extra);
             extra = NULL;
         }
-
-        free(ovector);
     }
 
     if (engine_types & ENGINE_JIT) {
 
-        ovecsize = (ncaps + 1) * 3;
-        ovector = malloc(ovecsize * sizeof(int));
-        assert(ovector);
-
-        printf("pcre JIT ");
+        printf("PCRE JIT ");
 
         extra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &errstr);
         if (errstr != NULL) {
@@ -245,11 +282,32 @@ run_engines(pcre *re, unsigned engine_types, int ncaps,
         }
         extra->match_limit = MATCH_LIMIT;
 
-        TIMER_START
+        for (i = 0; i < repeat; i++) {
+            double elapsed;
 
-        rc = pcre_exec(re, extra, input, len, 0, 0, ovector, ovecsize);
+            matches = 0;
+            p = input;
+            rest = len;
 
-        TIMER_STOP
+            TIMER_START
+
+            do {
+                rc = pcre_exec(re, extra, p, rest, 0, 0, ovector, ovecsize);
+
+                if (rc > 0) {
+                    matches++;
+                    p += ovector[1];
+                    rest -= ovector[1];
+                }
+
+            } while (global && rc > 0);
+
+            TIMER_STOP
+
+            if (i == 0 || elapsed < best) {
+                best = elapsed;
+            }
+        }
 
         if (rc == 0) {
             fprintf(stderr, "capture size too small");
@@ -269,24 +327,21 @@ run_engines(pcre *re, unsigned engine_types, int ncaps,
             }
         }
 
-        printf(": %.02lf ms elapsed.\n", elapsed);
+        printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+               best, matches, repeat);
 
         if (extra) {
             pcre_free_study(extra);
             extra = NULL;
         }
-
-        free(ovector);
     }
 
     if (engine_types & ENGINE_DFA) {
         int ws[100];
 
         ovecsize = 2;
-        ovector = malloc(ovecsize * sizeof(int));
-        assert(ovector);
 
-        printf("pcre DFA ");
+        printf("PCRE DFA ");
 
         extra = pcre_study(re, 0, &errstr);
         if (errstr != NULL) {
@@ -294,12 +349,33 @@ run_engines(pcre *re, unsigned engine_types, int ncaps,
             exit(2);
         }
 
-        TIMER_START
+        for (i = 0; i < repeat; i++) {
+            double elapsed;
 
-        rc = pcre_dfa_exec(re, extra, input, len, 0, 0, ovector, ovecsize,
-                           ws, sizeof(ws)/sizeof(ws[0]));
+            matches = 0;
+            p = input;
+            rest = len;
 
-        TIMER_STOP
+            TIMER_START
+
+            do {
+                rc = pcre_dfa_exec(re, extra, p, rest, 0, 0, ovector, ovecsize,
+                                   ws, sizeof(ws)/sizeof(ws[0]));
+
+                if (rc > 0) {
+                    matches++;
+                    p += ovector[1];
+                    rest -= ovector[1];
+                }
+
+            } while (global && rc > 0);
+
+            TIMER_STOP
+
+            if (i == 0 || elapsed < best) {
+                best = elapsed;
+            }
+        }
 
         if (rc == 0) {
             rc = 1;
@@ -318,14 +394,13 @@ run_engines(pcre *re, unsigned engine_types, int ncaps,
             }
         }
 
-        printf(": %.02lf ms elapsed.\n", elapsed);
+        printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+               best, matches, repeat);
 
         if (extra) {
             pcre_free_study(extra);
             extra = NULL;
         }
-
-        free(ovector);
     }
 }
 
@@ -338,6 +413,9 @@ usage(int rc)
             "   -i                  use case insensitive matching\n"
             "   --default           use the default PCRE engine\n"
             "   --dfa               use the PCRE DFA engine\n"
-            "   --jit               use the PCRE JIT engine\n");
+            "   --jit               use the PCRE JIT engine\n"
+            "   -g                  enable the global search mode\n"
+            "   --repeat=N          repeat the test for N times; pick the best\n"
+            "                       result. default to 5.\n");
     exit(rc);
 }
