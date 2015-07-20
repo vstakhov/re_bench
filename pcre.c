@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
+#include "getcputime.h"
 
 
 static void usage(int rc);
@@ -29,18 +30,20 @@ enum {
 
 
 #define TIMER_START                                                          \
-        if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &begin) == -1) {         \
-            perror("clock_gettime");                                         \
+        begin = get_cpu_time();                                              \
+        if (begin == -1) {                                                   \
+            perror("get_cpu_time");                                          \
             exit(2);                                                         \
         }
 
 
 #define TIMER_STOP                                                           \
-        if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end) == -1) {           \
-            perror("clock_gettime");                                         \
+        end = get_cpu_time();                                                \
+        if (end == -1) {                                                     \
+            perror("get_cpu_time");                                          \
             exit(2);                                                         \
         }                                                                    \
-        elapsed = (end.tv_sec - begin.tv_sec) * 1e3 + (end.tv_nsec - begin.tv_nsec) * 1e-6;
+        elapsed = end - begin;
 
 
 int
@@ -197,8 +200,7 @@ run_engines(pcre *re, unsigned engine_types, int *ovector, int ovecsize,
     int                  rc = -1;
     size_t               rest;
     pcre_extra          *extra;
-    struct timespec      begin, end;
-    double               best = -1;
+    double               begin, end, best = -1;
     const char          *errstr = NULL, *p;
 
     if (engine_types & ENGINE_DEFAULT) {
@@ -263,7 +265,7 @@ run_engines(pcre *re, unsigned engine_types, int *ovector, int ovecsize,
         }
 
         printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
-               best, matches, repeat);
+               best * 1e3, matches, repeat);
 
         if (extra) {
             pcre_free_study(extra);
@@ -328,7 +330,7 @@ run_engines(pcre *re, unsigned engine_types, int *ovector, int ovecsize,
         }
 
         printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
-               best, matches, repeat);
+               best * 1e3, matches, repeat);
 
         if (extra) {
             pcre_free_study(extra);
@@ -395,7 +397,7 @@ run_engines(pcre *re, unsigned engine_types, int *ovector, int ovecsize,
         }
 
         printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
-               best, matches, repeat);
+               best * 1e3, matches, repeat);
 
         if (extra) {
             pcre_free_study(extra);

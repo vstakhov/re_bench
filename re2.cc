@@ -14,26 +14,12 @@
 #include <cerrno>
 #include <ctime>
 #include <cstdlib>
+#include "getcputime.h"
 
 
 static void usage(int rc);
 static void run_engine(RE2 *re, char *input, size_t len, int global,
     int repeat);
-
-
-#define TIMER_START                                                          \
-        if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &begin) == -1) {         \
-            perror("clock_gettime");                                         \
-            exit(2);                                                         \
-        }
-
-
-#define TIMER_STOP                                                           \
-        if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end) == -1) {           \
-            perror("clock_gettime");                                         \
-            exit(2);                                                         \
-        }                                                                    \
-        elapsed = (end.tv_sec - begin.tv_sec) * 1e3 + (end.tv_nsec - begin.tv_nsec) * 1e-6;
 
 
 int
@@ -177,8 +163,7 @@ run_engine(RE2 *re, char *input, size_t len, int global, int repeat)
     size_t               rest;
     re2::StringPiece     cap;
     re2::StringPiece     subj;
-    struct timespec      begin, end;
-    double               best = -1;
+    double               begin, end, best = -1;
     const char          *p;
 
     printf("RE2 PartialMatch ");
@@ -190,7 +175,11 @@ run_engine(RE2 *re, char *input, size_t len, int global, int repeat)
         rest = len;
         subj.set(input, len);
 
-        TIMER_START
+        begin = get_cpu_time();
+        if (begin == -1) {
+            perror("get_cpu_time");
+            exit(2);
+        }
 
         do {
             size_t      size;
@@ -208,7 +197,13 @@ run_engine(RE2 *re, char *input, size_t len, int global, int repeat)
 
         } while (global && rc);
 
-        TIMER_STOP
+        end = get_cpu_time();
+        if (end == -1) {
+            perror("get_cpu_time");
+            exit(2);
+        }
+
+        elapsed = end - begin;
 
         if (i == 0 || elapsed < best) {
             best = elapsed;
@@ -225,7 +220,7 @@ run_engine(RE2 *re, char *input, size_t len, int global, int repeat)
     }
 
     printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
-           best, matches, repeat);
+           best * 1e3, matches, repeat);
 }
 
 
