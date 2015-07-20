@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
+#include "getcputime.h"
 
 
 static void usage(int rc);
@@ -31,18 +32,20 @@ enum {
 
 
 #define TIMER_START                                                          \
-        if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &begin) == -1) {         \
-            perror("clock_gettime");                                         \
+        begin = get_cpu_time();                                              \
+        if (begin == -1) {                                                   \
+            perror("get_cpu_time");                                          \
             exit(2);                                                         \
         }
 
 
 #define TIMER_STOP                                                           \
-        if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end) == -1) {           \
-            perror("clock_gettime");                                         \
+        end = get_cpu_time();                                                \
+        if (end == -1) {                                                     \
+            perror("get_cpu_time");                                          \
             exit(2);                                                         \
         }                                                                    \
-        elapsed = (end.tv_sec - begin.tv_sec) * 1e3 + (end.tv_nsec - begin.tv_nsec) * 1e-6;
+        elapsed = end - begin;
 
 
 int
@@ -199,7 +202,7 @@ run_engines(sre_program_t *prog, unsigned engine_types, sre_uint_t ncaps,
     sre_int_t           *ovector;
     size_t               ovecsize;
     sre_pool_t          *pool;
-    struct timespec      begin, end;
+    double               begin, end;
     double               elapsed;
 
     sre_vm_thompson_ctx_t       *tctx;
