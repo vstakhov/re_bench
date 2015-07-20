@@ -7,6 +7,9 @@ RE1_INC=../../re1
 PCRE_LIB=/opt/pcre/lib
 PCRE_INC=/opt/pcre/include
 
+PCRE2_LIB=/opt/pcre2/lib
+PCRE2_INC=/opt/pcre2/include
+
 CFLAGS= -c -Wall -Werror -O3 -g
 CXXFLAGS= -c -Wall -Werror -O3 -g
 LDFLAGS=
@@ -20,7 +23,7 @@ ifneq (Darwin,$(shell uname -s))
 endif
 
 .PHONY: all
-all: sregex re1 pcre re2
+all: sregex re1 pcre pcre2 re2
 
 sregex: sregex.o ../libsregex.a
 	$(CC) -o $@ -Wl,-rpath,.. -L.. $< -lsregex $(LDFLAGS)
@@ -34,8 +37,11 @@ re2: re2.o
 pcre: pcre.o
 	$(CC) -o $@ -Wl,-rpath,$(PCRE_LIB) -L$(PCRE_LIB) $< -lpcre $(LDFLAGS)
 
+pcre2: pcre2.o
+	$(CC) -o $@ -Wl,-rpath,$(PCRE2_LIB) -L$(PCRE2_LIB) -lpcre2-8 $< $(LDFLAGS)
+
 %.o: %.c
-	$(CC) $(CFLAGS) -I../src -I$(RE1_INC) -I$(PCRE_INC) $<
+	$(CC) $(CFLAGS) -I../src -I$(RE1_INC) -I$(PCRE_INC) -I$(PCRE2_INC) $<
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -I$(RE2_INC) $<
@@ -51,7 +57,7 @@ bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
 	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_ABC)
 	#./bench 'dfa|efa|ffa|gfa' $(FILE_ABC)
 	#./bench '[d-h]' $(FILE_ABC)
-	./bench 'dd|ff|ee|gg|hh|ii|jj|kk|[l-n]m|oo|pp|qq|rr|ss|tt|uu|vv|ww|[x-z]y' $(FILE_ABC)
+	#./bench 'dd|ff|ee|gg|hh|ii|jj|kk|[l-n]m|oo|pp|qq|rr|ss|tt|uu|vv|ww|[x-z]y' $(FILE_ABC)
 	#./bench 'd|de' $(FILE_RAND_ABC)
 	#./bench 'd[abc]*?d' $(FILE_DELIM)
 	#./bench 'd.*?d' $(FILE_DELIM)
@@ -59,6 +65,8 @@ bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
 	#./bench 'd' $(FILE_ABC)
 	#./bench '[a-zA-Z]+ing' mtent12.txt
 	#./bench '\s[a-zA-Z]{0,12}ing\s' mtent12.txt
+	#./bench 'Twain' mtent12.txt
+	./bench '(?i)Twain' mtent12.txt
 
 clean:
 	rm -rf *.o sregex re1
