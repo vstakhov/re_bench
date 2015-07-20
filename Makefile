@@ -9,25 +9,30 @@ PCRE_INC=/opt/pcre/include
 
 CFLAGS= -c -Wall -Werror -O3 -g
 CXXFLAGS= -c -Wall -Werror -O3 -g
+LDFLAGS=
 REGEX1=
 FILE_ABC=abc.txt
 FILE_RAND_ABC=rand-abc.txt
 FILE_DELIM=delim.txt
 
+ifneq (Darwin,$(shell uname -s))
+    LDFLAGS+=-lrt
+endif
+
 .PHONY: all
 all: sregex re1 pcre re2
 
 sregex: sregex.o ../libsregex.a
-	$(CC) -o $@ -Wl,-rpath,.. -L.. $< -lsregex -lrt
+	$(CC) -o $@ -Wl,-rpath,.. -L.. $< -lsregex $(LDFLAGS)
 
 re1: re1.o $(RE1_LIB)/libre1.a
-	$(CC) -o $@ -Wl,-rpath,$(RE1_LIB) -L$(RE1_LIB) $< -lre1 -lrt
+	$(CC) -o $@ -Wl,-rpath,$(RE1_LIB) -L$(RE1_LIB) $< -lre1 $(LDFLAGS)
 
 re2: re2.o
-	$(CXX) -o $@ -Wl,-rpath,$(RE2_LIB) -L$(RE2_LIB) $< -lre2 -lrt
+	$(CXX) -o $@ -Wl,-rpath,$(RE2_LIB) -L$(RE2_LIB) $< -lre2 $(LDFLAGS)
 
 pcre: pcre.o
-	$(CC) -o $@ -Wl,-rpath,$(PCRE_LIB) -L$(PCRE_LIB) $< -lpcre -lrt
+	$(CC) -o $@ -Wl,-rpath,$(PCRE_LIB) -L$(PCRE_LIB) $< -lpcre $(LDFLAGS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -I../src -I$(RE1_INC) -I$(PCRE_INC) $<
