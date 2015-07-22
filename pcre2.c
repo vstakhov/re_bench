@@ -288,7 +288,7 @@ run_engines(pcre2_code *re, unsigned engine_types, pcre2_match_data *match_data,
             }
         }
 
-        printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+        printf(": %.05lf ms elapsed (%d matches found, %d repeated times).\n",
                best * 1e3, matches, repeat);
 
         pcre2_match_context_free(match_ctx);
@@ -358,7 +358,7 @@ run_engines(pcre2_code *re, unsigned engine_types, pcre2_match_data *match_data,
             }
         }
 
-        printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+        printf(": %.05lf ms elapsed (%d matches found, %d repeated times).\n",
                best * 1e3, matches, repeat);
 
         pcre2_match_context_free(match_ctx);
@@ -440,7 +440,7 @@ run_engines(pcre2_code *re, unsigned engine_types, pcre2_match_data *match_data,
             }
         }
 
-        printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+        printf(": %.05lf ms elapsed (%d matches found, %d repeated times).\n",
                best * 1e3, matches, repeat);
 
         pcre2_jit_stack_free(stack);

@@ -16,7 +16,7 @@ while (<>) {
         $total_size = $info[7];
         my $msize = sprintf("%.01f MB", $total_size / 1024 / 1024);
         $re =~ s{\\}{\\\\}g;
-        print "Benchmark result for regex /$re/ matching file $file of size $msize\n";
+        print "Benchmarking regex /$re/ matching file $file of size $msize\n";
         $found = 1;
     } elsif ($found && /^(\w+ .*?)\s*(?:match|error|no match|:)/) {
         my $name = $1;

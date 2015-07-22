@@ -12,12 +12,15 @@ echo ------
 #$E ./pcre -g --default --jit --dfa $1 $2
 $E ./pcre -g --default --jit $1 $2
 
+#$E ./pcre2 --repeat=1000000 -g --default --jit $1 $2
 $E ./pcre2 -g --default --jit $1 $2
 
-$E ./re2 -g $1 $2
+$E ./re2 --repeat=5 -g $1 $2
+#$E ./re2 --repeat=100000 -g $1 $2
 
 rm -f dfa.out
-../re.pl --debug=0 -g --timer --cc="clang -O3" -o dfa.out $1 a > /dev/null || exit 1
+#../re.pl --debug=0 --repeat=10000 -g --timer --cc="clang -g -O3" -o dfa.out $1 a > /dev/null || exit 1
+../re.pl --debug=0 --repeat=5 -g --timer --cc="clang -O3" -o dfa.out $1 a > /dev/null || exit 1
 ./dfa.out < $2
 
 #./re1 --thompson --pike $1 $2

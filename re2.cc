@@ -219,7 +219,7 @@ run_engine(RE2 *re, char *input, size_t len, int global, int repeat)
         printf("no match");
     }
 
-    printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+    printf(": %.05lf ms elapsed (%d matches found, %d repeated times).\n",
            best * 1e3, matches, repeat);
 }
 

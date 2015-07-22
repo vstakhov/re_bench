@@ -264,7 +264,7 @@ run_engines(pcre *re, unsigned engine_types, int *ovector, int ovecsize,
             }
         }
 
-        printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+        printf(": %.05lf ms elapsed (%d matches found, %d repeated times).\n",
                best * 1e3, matches, repeat);
 
         if (extra) {
@@ -329,7 +329,7 @@ run_engines(pcre *re, unsigned engine_types, int *ovector, int ovecsize,
             }
         }
 
-        printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+        printf(": %.05lf ms elapsed (%d matches found, %d repeated times).\n",
                best * 1e3, matches, repeat);
 
         if (extra) {
@@ -396,7 +396,7 @@ run_engines(pcre *re, unsigned engine_types, int *ovector, int ovecsize,
             }
         }
 
-        printf(": %.02lf ms elapsed (%d matches found, %d repeated times).\n",
+        printf(": %.05lf ms elapsed (%d matches found, %d repeated times).\n",
                best * 1e3, matches, repeat);
 
         if (extra) {

@@ -38,7 +38,7 @@ pcre: pcre.o
 	$(CC) -o $@ -Wl,-rpath,$(PCRE_LIB) -L$(PCRE_LIB) $< -lpcre $(LDFLAGS)
 
 pcre2: pcre2.o
-	$(CC) -o $@ -Wl,-rpath,$(PCRE2_LIB) -L$(PCRE2_LIB) -lpcre2-8 $< $(LDFLAGS)
+	$(CC) -o $@ -Wl,-rpath,$(PCRE2_LIB) -L$(PCRE2_LIB) $< -lpcre2-8 $(LDFLAGS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -I../src -I$(RE1_INC) -I$(PCRE_INC) -I$(PCRE2_INC) $<
@@ -61,7 +61,7 @@ bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
 	#./bench 'd|de' $(FILE_RAND_ABC)
 	#./bench 'd[abc]*?d' $(FILE_DELIM)
 	#./bench 'd.*?d' $(FILE_DELIM)
-	#./bench 'd.*d' $(FILE_DELIM)
+	./bench 'd.*d' $(FILE_DELIM)
 	#./bench 'd' $(FILE_ABC)
 	#./bench '[a-zA-Z]+ing' mtent12.txt
 	#./bench '\s[a-zA-Z]{0,12}ing\s' mtent12.txt
@@ -69,7 +69,7 @@ bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
 	#./bench '(?i)Twain' mtent12.txt
 	#./bench '[a-z]shing' mtent12.txt
 	#./bench 'Huck[a-zA-Z]+|Saw[a-zA-Z]+' mtent12.txt
-	./bench '\b\w+nn\b' mtent12.txt
+	#./bench '\b\w+nn\b' mtent12.txt
 	#./bench '[a-q][^u-z]{13}x' mtent12.txt
 
 clean:
