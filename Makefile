@@ -66,7 +66,11 @@ bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
 	#./bench '[a-zA-Z]+ing' mtent12.txt
 	#./bench '\s[a-zA-Z]{0,12}ing\s' mtent12.txt
 	#./bench 'Twain' mtent12.txt
-	./bench '(?i)Twain' mtent12.txt
+	#./bench '(?i)Twain' mtent12.txt
+	#./bench '[a-z]shing' mtent12.txt
+	#./bench 'Huck[a-zA-Z]+|Saw[a-zA-Z]+' mtent12.txt
+	./bench '\b\w+nn\b' mtent12.txt
+	#./bench '[a-q][^u-z]{13}x' mtent12.txt
 
 clean:
 	rm -rf *.o sregex re1
@@ -82,6 +86,6 @@ $(FILE_DELIM):
 
 .PHONY: plot
 plot:
-	$(MAKE) test > a.txt
+	$(MAKE) bench > a.txt
 	perl gen-csv.pl a.txt > a.csv
 	gnuplot bench.gnu
