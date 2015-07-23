@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+export PATH=/opt/tcc/bin:$PATH
+#E='valgrind --leak-check=full --quiet'
+E=
+
+echo ------
+
+#$E ./sregex --thompson --thompson-jit --pike $1 $2
+#$E ./sregex --pike $1 $2
+
+#$E ./pcre -g --default --jit --dfa $1 $2
+$E ./pcre -g --default --jit $1 $2
+
+#$E ./pcre2 --repeat=1000000 -g --default --jit $1 $2
+$E ./pcre2 -g --default --jit $1 $2
+
+$E ./re2 --repeat=5 -g $1 $2
+#$E ./re2 --repeat=100000 -g $1 $2
+
+rm -f dfa.out
+#../re.pl --debug=0 --repeat=100000 -g --timer --cc="gcc -g -O3" -o dfa.out $1 a > /dev/null || exit 1
+../re.pl --debug=0 --repeat=5 -g --timer --cc="gcc -O3" -o dfa.out $1 a > /dev/null || exit 1
+./dfa.out < $2
+
+#./re1 --thompson --pike $1 $2
+
+echo ------
