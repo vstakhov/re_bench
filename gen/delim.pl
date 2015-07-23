@@ -11,6 +11,6 @@ my @chars;
 for (my $i = 0; $i < 1024 * 1024; $i++) {
     push @chars, $alphabet[int(rand $i) % 3];
 }
-print $out "d" . join("", @chars) x 10 . "aaabbccbd";
+print $out "d" . join("", @chars) x 10 . "aaabbccb";
 close $out;
 
