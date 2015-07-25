@@ -17,6 +17,7 @@ REGEX1=
 FILE_ABC=abc.txt
 FILE_RAND_ABC=rand-abc.txt
 FILE_DELIM=delim.txt
+FILE_MTENT12=mtent12.txt
 
 ifneq (Darwin,$(shell uname -s))
     LDFLAGS+=-lrt
@@ -46,8 +47,11 @@ pcre2: pcre2.o
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -I$(RE2_INC) $<
 
+$(FILE_MTENT12):
+	wget http://agentzh.org/misc/re/bench/$(FILE_MTENT12)
+
 .PHONY: bench
-bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
+bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM) $(FILE_MTENT12)
 	#./bench 'd' $(FILE_ABC)
 	#./bench 'd|de' $(FILE_RAND_ABC)
 	#./bench 'dfa|efa|ufa|zfa' $(FILE_ABC)  # 16.6ms
@@ -70,9 +74,9 @@ bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
 	#./bench '[a-z]shing' mtent12.txt  # 46.61745ms
 	#./bench 'Huck[a-zA-Z]+|Saw[a-zA-Z]+' mtent12.txt # 8.51685ms WE SLOW! (11.64507ms)
 	#./bench '\b\w+nn\b' mtent12.txt  # 52.90915ms (49.79010ms) (55.07292)
-	#./bench3 '[a-q][^u-z]{13}x' mtent12.txt  # WE SLOW!! gcc -O3: 171.42045ms
+	./bench3 '[a-q][^u-z]{13}x' mtent12.txt  # WE SLOW!! gcc -O3: 171.42045ms
 	#./bench 'Tom|Sawyer|Huckleberry|Finn' mtent12.txt  # WE SLOW!!  43.73897ms (18.01813ms)
-	./bench '(?i)Tom|Sawyer|Huckleberry|Finn' mtent12.txt # WE SLOW!!  99.46298 (66.39118ms)
+	#./bench '(?i)Tom|Sawyer|Huckleberry|Finn' mtent12.txt # WE SLOW!!  99.46298 (66.39118ms)
 	#./bench '.{0,2}(Tom|Sawyer|Huckleberry|Finn)' mtent12.txt  # 44.44251ms (18.11103ms)
 	#./bench '.{2,4}(Tom|Sawyer|Huckleberry|Finn)' mtent12.txt  # 45.11014ms (18.35325ms)
 	##./bench 'Tom.{10,25}river|river.{10,25}Tom' mtent12.txt gcc # WE SLOW!!
