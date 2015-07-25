@@ -76,6 +76,19 @@ print $out <<_EOC_;
 <html>
 <head>
  <title>$title</title>
+ <style>
+body {
+    text-align: left;
+    text-align-last: left;
+    width: 70%;
+    margin: 2em;
+}
+
+code {
+    font-family: consolas, monospace;
+}
+
+ </style>
 </head>
 <body>
 <h1>$title</h1>
@@ -86,6 +99,8 @@ cases are shown here.</p>
 and/or run the benchmark yourself.</a>
 <p>&nbsp; &nbsp; <a href="https://github.com/openresty/sregex/tree/dfa/bench/">
 https://github.com/openresty/sregex/tree/dfa/bench/</a></p>
+<p>Just run the <code>make && ./plot-all.pl</code> command in that directory locally
+and then open the resulting <code>./index.html</code> in your favoriate web browser.</p>
 <p>The results were automatically generated at $now on $system.</p>
 <dl>
 _EOC_
