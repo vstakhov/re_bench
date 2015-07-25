@@ -3,6 +3,16 @@
 use strict;
 use warnings;
 
+use Getopt::Std;
+
+my %opts;
+getopts("o:", \%opts) or die;
+
+my $outfile = $opts{o} || "a.png";
+if ($outfile !~ /\.png$/i) {
+    die "Only PNG output is allowed.\n";
+}
+
 my $infile = shift
     or die "No input file specified.\n";
 open my $in, $infile
@@ -63,7 +73,7 @@ if (!$title) {
 $max_y *= 1.1;
 
 my $label_delta = $max_y / 25;
-warn $label_delta;
+#warn $label_delta;
 
 my $gnufile = "a.gnu";
 open my $out, ">$gnufile"
@@ -75,7 +85,7 @@ set terminal pngcairo background "#ffffff" fontscale 1.0 size 800, 500
 set boxwidth 1
 set grid
 set datafile separator ","
-set output "a.png"
+set output "$outfile"
 set yrange [0:$max_y]
 set style fill solid 1.0 border -1
 set xtics border in scale 0,10  nomirror rotate by -45
@@ -98,4 +108,4 @@ close $out;
 my $cmd = "gnuplot $gnufile";
 print "$cmd\n";
 system($cmd) == 0 or die;
-print "a.png generated.\n";
+print "$outfile generated.\n";
