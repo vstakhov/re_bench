@@ -24,7 +24,7 @@ my $title;
 my @data;
 my $max_y = 0;
 while (<$in>) {
-    if (m{^\./bench\d*\s+'(.*?)' (\S+)}) {
+    if (m{^\./bench\d*\s+(.*?)\s+(\S+)$}) {
         if ($found) {
             last;
         }
@@ -34,6 +34,7 @@ while (<$in>) {
         $total_size = $info[7];
         my $msize = sprintf("%.01f MB", $total_size / 1024 / 1024);
         $re =~ s{\\}{\\\\}g;
+        $re =~ s{"}{\\"}g;
         $title = "Benchmarking regex /$re/ matching file $file of size $msize";
         #print $out "$title\n";
         $found = 1;
@@ -80,7 +81,7 @@ open my $out, ">$gnufile"
     or die "Cannot open $gnufile for writing: $!\n";
 
 print $out <<_EOC_;
-set terminal pngcairo background "#ffffff" fontscale 1.0 size 800, 500
+set terminal pngcairo background "#ffffff" fontscale 1.0 size 800, 500 enhanced font 'andale mono,10'
 
 set boxwidth 1
 set grid
@@ -90,7 +91,7 @@ set yrange [0:$max_y]
 set style fill solid 1.0 border -1
 set xtics border in scale 0,10  nomirror rotate by -45
 set ylabel "Matching Speed (Mega Bytes/Sec)" font "bold"
-set title "$title"
+set title "$title" noenhanced
 plot "a.csv" using (\$0):2:(\$0):xticlabels(1) with boxes lc variable notitle, \\
      "" using (\$0):(\$2+$label_delta):3 with labels notitle
 _EOC_

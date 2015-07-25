@@ -28,6 +28,7 @@ while (<$in>) {
         if (m{^\t\@?\#?(\./bench\d*\s.+)}) {
             my $cmd = $1;
             $cmd =~ s/\$\((FILE_\w+)\)/$files{$1}/eg;
+            $cmd =~ s/\$\$/\$/g;
             $cmd =~ s/\s*\#.*//;
             if (!exists $seen_cmds{$cmd}) {
                 $seen_cmds{$cmd} = 1;
@@ -45,15 +46,25 @@ mkdir "images" unless -d "images";
 
 my $num_width = length scalar @cmds;
 my @images;
+my @results;
 my $i = 0;
 for my $cmd (@cmds) {
     #last if $i >= 2;
     my $pngfile = sprintf "images/re%0${num_width}d.png", $i;
-    shell(qq{echo "$cmd" > a.txt});
-    shell("$cmd > /dev/null") for 1..1;  # just to warm up a bit
-    shell("$cmd >> a.txt");
-    shell("./gen-plot.pl -o $pngfile a.txt");
+    my $txtfile = "a.txt";
+    shell(qq{echo $cmd > $txtfile});
+    #shell("$cmd > /dev/null") for 1..1;  # just to warm up a bit
+    shell("$cmd >> $txtfile");
+    shell("./gen-plot.pl -o $pngfile $txtfile");
     push @images, $pngfile;
+    {
+        open my $in, $txtfile or die "Cannot open $txtfile for reading: $!\n";
+        my $txt = do { local $/; <$in> };
+        $txt =~ s/^[^\n]+\n//s;
+        $txt =~ s/^-+\n//gms;
+        close $in;
+        push @results, $txt;
+    }
     $i++;
 }
 
@@ -83,7 +94,6 @@ body {
 code {
     font-family: consolas, monospace;
 }
-
  </style>
 </head>
 <body>
@@ -133,7 +143,7 @@ _EOC_
 my $sregex_rev = `git rev-parse HEAD` or die "Cannot get sregex git HEAD.\n";
 $sregex_rev = substr $sregex_rev, 0, 10;
 print $out <<_EOC_;
-  <dt><a href="https://github.com/openresty/sregex/tree/dfa">SRegex</a></dt>
+  <dt><a href="https://github.com/openresty/sregex/tree/dfa/re.pl">SRegex DFA Prototype</a></dt>
   <dd>git commit <a href="https://github.com/openresty/sregex/commit/$sregex_rev">$sregex_rev</a></dd>
 _EOC_
 
@@ -141,15 +151,25 @@ print $out <<_EOC_;
 </dl>
 _EOC_
 
-my $i = 0;
-for my $img (@images) {
-    $i++;
-    print $out <<_EOC_;
+{
+    my $i = 0;
+    for my $img (@images) {
+        my $cmd = $cmds[$i];
+        my $res = $results[$i];
+        $i++;
+        print $out <<_EOC_;
 <h2>Case $i</h2>
+<p>
+<pre>
+\$ $cmd
+$res
+</pre>
+</p>
 <p>
 <img src="$img">
 </p>
 _EOC_
+    }
 }
 
 print $out <<_EOC_;
