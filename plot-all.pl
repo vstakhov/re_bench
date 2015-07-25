@@ -106,6 +106,10 @@ code {
 <p>This page contains benchmark results for various regex engines executing
 various different regexes on variuous different input data. For total <b>$total</b>
 cases are shown here.</p>
+<p>This page is maintained by Yichun Zhang (agentzh) &lt;agentzh\@gmail.com&gt;.
+Many test cases used here are taken directly from the performance test suite
+maintained by the author of PCRE JIT, Zoltan Herczeg.
+</p>
 <p>You can find the original programs and data below if you want to check the details
 and/or run the benchmark yourself.</a>
 <p>&nbsp; &nbsp; <a href="https://github.com/openresty/sregex/tree/dfa/bench/">
