@@ -99,6 +99,10 @@ body {
 code {
     font-family: consolas, monospace;
 }
+
+dt {
+    line-height: 2em;
+}
  </style>
 </head>
 <body>
