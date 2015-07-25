@@ -50,6 +50,10 @@ my @results;
 my $i = 0;
 for my $cmd (@cmds) {
     #last if $i >= 2;
+    if ($cmd =~ /\Q[a-q][^u-z]{13}x\E/ && !$ENV{SREGEX_BENCH_RUN_SLOW}) {
+        warn "Skipped regex $& since the environment SREGEX_BENCH_RUN_SLOW is unset.\n";
+        next;
+    }
     my $pngfile = sprintf "images/re%0${num_width}d.png", $i;
     my $txtfile = "a.txt";
     (my $tag = $cmd) =~ s/\s+(?:gcc|clang)\s*$//g;

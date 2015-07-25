@@ -18,9 +18,15 @@ $E ./pcre2 -g --default --jit $1 $2
 $E ./re2 --repeat=1 -g $1 $2
 #$E ./re2 --repeat=100000 -g $1 $2
 
-#../re.pl --debug=0 --repeat=100000 -g --timer --cc="gcc -g -O3" -o dfa.out $1 a > /dev/null || exit 1
-#../re.pl --debug=0 --repeat=5 -g --timer --cc="gcc -O3" -o dfa.out $1 a > /dev/null || exit 1
-./a-q-gcc-O3-2.out < $2
+exefile=./dfa3.out
+if [ ! -f $exefile ]; then
+    ../re.pl --debug=0 --repeat=5 -g --timer --cc="gcc -O3" -o $exefile $1 a > /dev/null || exit 1
+fi
+$exefile < $2
+
+exefile2=./dfa3-g.out
+#../re.pl --debug=0 --repeat=100000000 -g --cc="gcc -g -O3" -o $exefile2 $1 a > /dev/null || exit 1
+#$exefile2 < $2
 
 #./re1 --thompson --pike $1 $2
 
