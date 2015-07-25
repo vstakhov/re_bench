@@ -32,6 +32,9 @@ enum {
 };
 
 
+#define u_char  unsigned char
+
+
 #define TIMER_START                                                          \
         begin = get_cpu_time();                                              \
         if (begin == -1) {                                                   \
