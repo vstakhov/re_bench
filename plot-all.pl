@@ -48,10 +48,6 @@ my @images;
 my $i = 0;
 for my $cmd (@cmds) {
     #last if $i >= 2;
-    if ($cmd =~ /Tom\.\{10,25\}river/) {
-        warn "Skipping slow regex $cmd\n";
-        next;
-    }
     my $pngfile = sprintf "images/re%0${num_width}d.png", $i;
     shell(qq{echo "$cmd" > a.txt});
     shell($cmd) for 1..1;  # just to warm up a bit
