@@ -48,13 +48,8 @@ pcre2: pcre2.o
 
 .PHONY: bench
 bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
-	#./bench '(?:a|b)aa(?:aa|bb)cc(?:a|b)' $(FILE_ABC)
-	#./bench '(?:a|b)aa(?:aa|bb)cc(?:a|b)abcabcabd' $(FILE_RAND_ABC)
-	#@echo "========================================"
-	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_ABC)
-	#@echo "========================================"
-	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_RAND_ABC) # 51.12535ms
-	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_ABC)
+	#./bench 'd' $(FILE_ABC)
+	#./bench 'd|de' $(FILE_RAND_ABC)
 	#./bench 'dfa|efa|ufa|zfa' $(FILE_ABC)  # 16.6ms
 	#./bench 'dfa|efa|ufa|zfa' mtent12.txt
 	#./bench '[d-hx-z]' $(FILE_ABC)
@@ -62,11 +57,13 @@ bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
 	#./bench '[d-hx-z]' mtent12.txt  # 63.04006
 	#./bench 'ddd|fff|eee|ggg|hhh|iii|jjj|kkk|[l-n]mm|ooo|ppp|qqq|rrr|sss|ttt|uuu|vvv|www|[x-z]yy' mtent12.txt #$(FILE_ABC)  # 126.75379ms
 	#./bench 'ddd|fff|eee|ggg|hhh|iii|jjj|kkk|[l-n]mm|ooo|ppp|qqq|rrr|sss|ttt|uuu|vvv|www|[x-z]yy' $(FILE_ABC)  # 9.92087ms
-	#./bench 'd|de' $(FILE_RAND_ABC)
+	#./bench '(?:a|b)aa(?:aa|bb)cc(?:a|b)' $(FILE_ABC)
+	#./bench '(?:a|b)aa(?:aa|bb)cc(?:a|b)abcabcabd' $(FILE_RAND_ABC)
+	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_ABC)
+	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_RAND_ABC) # 51.12535ms
 	#./bench 'd[abc]*?d' $(FILE_DELIM)  # 5.04849ms
 	#./bench 'd.*?d' $(FILE_DELIM)  # 0.52372ms
 	#./bench 'd.*d' $(FILE_DELIM)	# 0.54214ms (slow than PCRE interp)
-	#./bench 'd' $(FILE_ABC)
 	#./bench2 '^Twain' mtent12.txt    # gcc is faster than clang! clang: 11.60232ms, gcc: 9.04509ms (9.01065)
 	#./bench 'Twain' mtent12.txt  # 1.80803ms (1.74212ms)
 	#./bench '(?i)Twain' mtent12.txt   # 19.81792ms (18.70ms)
