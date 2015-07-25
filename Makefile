@@ -69,10 +69,10 @@ bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM)
 	#./bench '(?i)Twain' mtent12.txt   # 19.81792ms (18.70ms)
 	#./bench '[a-z]shing' mtent12.txt  # 46.61745ms
 	#./bench 'Huck[a-zA-Z]+|Saw[a-zA-Z]+' mtent12.txt # 8.51685ms WE SLOW! (11.64507ms)
-	./bench '\b\w+nn\b' mtent12.txt  # 52.90915ms (49.79010ms) (55.07292)
+	#./bench '\b\w+nn\b' mtent12.txt  # 52.90915ms (49.79010ms) (55.07292)
 	#./bench3 '[a-q][^u-z]{13}x' mtent12.txt  # WE SLOW!! gcc -O3: 171.42045ms
 	#./bench 'Tom|Sawyer|Huckleberry|Finn' mtent12.txt  # WE SLOW!!  43.73897ms (18.01813ms)
-	#./bench '(?i)Tom|Sawyer|Huckleberry|Finn' mtent12.txt clang # WE SLOW!!  99.46298 (66.39118ms)
+	./bench '(?i)Tom|Sawyer|Huckleberry|Finn' mtent12.txt # WE SLOW!!  99.46298 (66.39118ms)
 	#./bench '.{0,2}(Tom|Sawyer|Huckleberry|Finn)' mtent12.txt  # 44.44251ms (18.11103ms)
 	#./bench '.{2,4}(Tom|Sawyer|Huckleberry|Finn)' mtent12.txt  # 45.11014ms (18.35325ms)
 	##./bench 'Tom.{10,25}river|river.{10,25}Tom' mtent12.txt gcc # WE SLOW!!

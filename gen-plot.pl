@@ -32,6 +32,9 @@ while (<$in>) {
         #warn $re;
         my @info = stat $file;
         $total_size = $info[7];
+        if (!defined $total_size) {
+            die "failed to stat $file.\n";
+        }
         my $msize = sprintf("%.01f MB", $total_size / 1024 / 1024);
         $re =~ s{\\}{\\\\}g;
         $re =~ s{"}{\\"}g;

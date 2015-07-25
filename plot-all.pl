@@ -52,7 +52,8 @@ for my $cmd (@cmds) {
     #last if $i >= 2;
     my $pngfile = sprintf "images/re%0${num_width}d.png", $i;
     my $txtfile = "a.txt";
-    shell(qq{echo $cmd > $txtfile});
+    (my $tag = $cmd) =~ s/\s+(?:gcc|clang)\s*$//g;
+    shell(qq{echo $tag > $txtfile});
     #shell("$cmd > /dev/null") for 1..1;  # just to warm up a bit
     shell("$cmd >> $txtfile");
     shell("./gen-plot.pl -o $pngfile $txtfile");
