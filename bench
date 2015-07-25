@@ -11,8 +11,8 @@ fi
 
 echo ------
 
-#$E ./sregex --thompson --thompson-jit --pike $1 $2
-#$E ./sregex --pike $1 $2
+#$E ./sregex -g --thompson --thompson-jit --pike $1 $2
+#$E ./sregex -g --pike $1 $2
 
 #$E ./pcre -g --default --jit --dfa $1 $2
 $E ./pcre -g --default --jit $1 $2

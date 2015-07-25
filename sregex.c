@@ -18,7 +18,8 @@
 
 static void usage(int rc);
 static void run_engines(sre_program_t *prog, unsigned engine_types,
-    sre_uint_t ncaps, sre_char *input, size_t len);
+    sre_uint_t ncaps, sre_char *input, size_t len, int global,
+    int repeat);
 static void alloc_error(void);
 sre_int_t run_jitted_thompson(sre_vm_thompson_exec_pt handler,
     sre_vm_thompson_ctx_t *ctx, sre_char *input, size_t size, unsigned eof);
@@ -52,6 +53,7 @@ int
 main(int argc, char **argv)
 {
     int                  flags = 0;
+    int                  global = 0, repeat = 5;
     unsigned             engine_types = 0;
     sre_uint_t           i;
     sre_int_t            err_offset = -1;
@@ -89,8 +91,19 @@ main(int argc, char **argv)
         {
             engine_types |= ENGINE_PIKE;
 
-        } else if (strncmp(argv[i], "-i", 2) == 0) {
+        } else if (strncmp(argv[i], "-g", 2) == 0) {
+            global = 1;
+
+         } else if (strncmp(argv[i], "-i", 2) == 0) {
             flags |= SRE_REGEX_CASELESS;
+
+        } else if (strncmp(argv[i], "--repeat=", sizeof("--repeat=") - 1)
+                   == 0)
+        {
+            repeat = atoi(argv[i] + sizeof("--repeat=") - 1);
+            if (repeat <= 0) {
+                repeat = 5;
+            }
 
         } else {
             fprintf(stderr, "unknown option: %s\n", argv[i]);
@@ -185,7 +198,7 @@ main(int argc, char **argv)
         return 1;
     }
 
-    run_engines(prog, engine_types, ncaps, input, len);
+    run_engines(prog, engine_types, ncaps, input, len, global, repeat);
 
     free(input);
     sre_destroy_pool(cpool);
@@ -195,15 +208,15 @@ main(int argc, char **argv)
 
 static void
 run_engines(sre_program_t *prog, unsigned engine_types, sre_uint_t ncaps,
-    sre_char *input, size_t len)
+    sre_char *input, size_t len, int global, int repeat)
 {
-    sre_uint_t           i;
-    sre_int_t            rc;
+    int                  i, matches = 0;
+    sre_int_t            rc = -1;
     sre_int_t           *ovector;
-    size_t               ovecsize;
+    size_t               ovecsize, rest;
     sre_pool_t          *pool;
     double               begin, end;
-    double               elapsed;
+    double               best = -1;
 
     sre_vm_thompson_ctx_t       *tctx;
     sre_vm_pike_ctx_t           *pctx;
@@ -216,6 +229,7 @@ run_engines(sre_program_t *prog, unsigned engine_types, sre_uint_t ncaps,
     }
 
     if (engine_types & ENGINE_THOMPSON) {
+        double elapsed;
 
         printf("sregex Thompson ");
 
@@ -252,12 +266,14 @@ run_engines(sre_program_t *prog, unsigned engine_types, sre_uint_t ncaps,
             exit(2);
         }
 
-        printf(": %.02lf ms elapsed.\n", elapsed);
+        printf(": %.05lf ms elapsed.\n", elapsed * 1e3);
 
         sre_reset_pool(pool);
     }
 
     if (engine_types & ENGINE_THOMPSON_JIT) {
+        double elapsed;
+
         rc = sre_vm_thompson_jit_compile(pool, prog, &tcode);
 
         if (rc == SRE_DECLINED) {
@@ -311,7 +327,7 @@ run_engines(sre_program_t *prog, unsigned engine_types, sre_uint_t ncaps,
             exit(2);
         }
 
-        printf(": %.02lf ms elapsed.\n", elapsed);
+        printf(": %.05lf ms elapsed.\n", elapsed * 1e3);
 
         sre_reset_pool(pool);
     }
@@ -330,11 +346,32 @@ run_engines(sre_program_t *prog, unsigned engine_types, sre_uint_t ncaps,
             alloc_error();
         }
 
-        TIMER_START
+        for (i = 0; i < repeat; i++) {
+            double        elapsed;
+            const u_char *p;
 
-        rc = sre_vm_pike_exec(pctx, input, len, 1 /* eof */, NULL);
+            matches = 0;
+            p = input;
+            rest = len;
 
-        TIMER_STOP
+            TIMER_START
+
+            do {
+                rc = sre_vm_pike_exec(pctx, (u_char *) p, rest, 1 /* eof */, NULL);
+                if (rc == SRE_OK) {
+                    matches++;
+                    p += ovector[1];
+                    rest -= ovector[1];
+                }
+
+            } while (global && rc == SRE_OK);
+
+            TIMER_STOP
+
+            if (i == 0 || elapsed < best) {
+                best = elapsed;
+            }
+        }
 
         switch (rc) {
         case SRE_OK:
@@ -363,7 +400,8 @@ run_engines(sre_program_t *prog, unsigned engine_types, sre_uint_t ncaps,
             break;
         }
 
-        printf(": %.02lf ms elapsed.\n", elapsed);
+        printf(": %.05lf ms elapsed (%d matches found, %d repeated times).\n",
+               best * 1e3, matches, repeat);
 
         free(ovector);
         sre_reset_pool(pool);
