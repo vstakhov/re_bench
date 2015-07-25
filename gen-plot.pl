@@ -24,7 +24,7 @@ my $title;
 my @data;
 my $max_y = 0;
 while (<$in>) {
-    if (m{^\./bench '(.*?)' (\S+)}) {
+    if (m{^\./bench\d*\s+'(.*?)' (\S+)}) {
         if ($found) {
             last;
         }

@@ -50,7 +50,7 @@ for my $cmd (@cmds) {
     #last if $i >= 2;
     my $pngfile = sprintf "images/re%0${num_width}d.png", $i;
     shell(qq{echo "$cmd" > a.txt});
-    shell($cmd) for 1..1;  # just to warm up a bit
+    shell("$cmd > /dev/null") for 1..1;  # just to warm up a bit
     shell("$cmd >> a.txt");
     shell("./gen-plot.pl -o $pngfile a.txt");
     push @images, $pngfile;
