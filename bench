@@ -11,24 +11,24 @@ fi
 
 echo ------
 
-#$E ./sregex -g --thompson --thompson-jit --pike $1 $2
-#$E ./sregex -g --pike $1 $2
+#$E ./sregex -g --thompson --thompson-jit --pike "$1" $2
+#$E ./sregex -g --pike "$1" $2
 
-#$E ./pcre -g --default --jit --dfa $1 $2
-$E ./pcre -g --default --jit $1 $2
+#$E ./pcre -g --default --jit --dfa "$1" $2
+$E ./pcre -g --default --jit "$1" $2
 
-#$E ./pcre2 --repeat=1000000 -g --default $1 $2
-#$E ./pcre2 --repeat=1000000 -g --jit $1 $2
-$E ./pcre2 -g --default --jit $1 $2
+#$E ./pcre2 --repeat=1000000 -g --default "$1" $2
+#$E ./pcre2 --repeat=1000000 -g --jit "$1" $2
+$E ./pcre2 -g --default --jit "$1" $2
 
-$E ./re2 --repeat=5 -g $1 $2
-#$E ./re2 --repeat=100000 -g $1 $2
+$E ./re2 --repeat=5 -g "$1" $2
+#$E ./re2 --repeat=100000 -g "$1" $2
 
 rm -f dfa.out
-../re.pl --debug=0 --repeat=5 -g --timer --cc="$comp -O3" -o dfa.out $1 a > /dev/null || exit 1
-#../re.pl --debug=0 --repeat=100000000 -g --cc="gcc -g -O3" -o dfa.out $1 a > /dev/null || exit 1
+../re.pl --debug=0 --repeat=5 -g --timer --cc="$comp -O3" -o dfa.out "$1" a > /dev/null || exit 1
+#../re.pl --debug=0 --repeat=100000000 -g --cc="gcc -g -O3" -o dfa.out "$1" a > /dev/null || exit 1
 ./dfa.out < $2
 
-#./re1 --thompson --pike $1 $2
+#./re1 --thompson --pike "$1" $2
 
 echo ------
