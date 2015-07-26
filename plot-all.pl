@@ -178,12 +178,32 @@ print $out <<_EOC_;
 _EOC_
 
 my $pcre_ver = `pcre-config --version`;
+chomp $pcre_ver;
+my $pcre_rev;
+my $pcre_dir = "../../../svn/pcre";
+if (-d $pcre_dir) {
+    $pcre_rev = `cd $pcre_dir && svn info | grep "Revision"`
+        or die "Cannot get pcre svn revision.\n";
+    $pcre_rev =~ s/^Revision:\s*//i;
+    $pcre_rev =~ s/^\s*|\s*$//gs;
+    $pcre_ver .= qq{ svn revision <a href="http://vcs.pcre.org/pcre?view=revision\&revision=$pcre_rev">$pcre_rev</a>};
+}
 print $out <<_EOC_;
   <dt><a href="http://www.pcre.org/">PCRE</a></dt>
   <dd>$pcre_ver</dd>
 _EOC_
 
 my $pcre2_ver = `pcre2-config --version`;
+chomp $pcre2_ver;
+my $pcre2_rev;
+my $pcre2_dir = "../../../svn/pcre2";
+if (-d $pcre2_dir) {
+    $pcre2_rev = `cd $pcre2_dir && svn info | grep "Revision"`
+        or die "Cannot get pcre svn revision.\n";
+    $pcre2_rev =~ s/^Revision:\s*//i;
+    $pcre2_rev =~ s/^\s*|\s*$//gs;
+    $pcre2_ver .= qq{ svn revision <a href="http://vcs.pcre.org/pcre2?view=revision\&revision=$pcre2_rev">$pcre2_rev</a>};
+}
 print $out <<_EOC_;
   <dt><a href="http://www.pcre.org/">PCRE2</a></dt>
   <dd>$pcre2_ver</dd>
@@ -192,7 +212,8 @@ _EOC_
 my $re2_rev;
 my $re2_dir = "../../re2";
 if (-d $re2_dir) {
-    $re2_rev = `cd $re2_dir && git rev-parse HEAD` or die "Cannot get re2 git HEAD.\n";
+    $re2_rev = `cd $re2_dir && git rev-parse HEAD`
+        or die "Cannot get re2 git HEAD.\n";
     $re2_rev = substr $re2_rev, 0, 10;
     print $out <<_EOC_;
       <dt><a href="https://github.com/google/re2/">RE2</a></dt>
