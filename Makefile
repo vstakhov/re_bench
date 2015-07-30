@@ -67,13 +67,13 @@ bench: all $(FILE_ABC) $(FILE_RAND_ABC) $(FILE_DELIM) $(FILE_MTENT12)
 	#./bench '(a|b)aa(aa|bb)cc(a|b)abcabcabc' $(FILE_RAND_ABC) # 51.12535ms
 	#./bench 'd[abc]*?d' $(FILE_DELIM)  # 5.04849ms
 	#./bench 'd.*?d' $(FILE_DELIM)  # 0.52372ms
-	./bench 'd.*d' $(FILE_DELIM)	# 0.54214ms (slow than PCRE interp)
+	#./bench 'd.*d' $(FILE_DELIM)	# 0.54214ms (slow than PCRE interp)
 	#./bench2 '^Twain' mtent12.txt    # gcc is faster than clang! clang: 11.60232ms, gcc: 9.04509ms (9.01065)
 	#./bench 'Twain' mtent12.txt  # 1.80803ms (1.74212ms)
 	#./bench '(?i)Twain' mtent12.txt   # 19.81792ms (18.70ms)
 	#./bench '[a-z]shing' mtent12.txt  # 46.61745ms
 	#./bench 'Huck[a-zA-Z]+|Saw[a-zA-Z]+' mtent12.txt # 8.51685ms WE SLOW! (11.64507ms)
-	#./bench '\b\w+nn\b' mtent12.txt  # 52.90915ms (49.79010ms) (55.07292)
+	./bench '\b\w+nn\b' mtent12.txt # 52.90915ms (49.79010ms) (55.07292) (51.82008)
 	#./bench3 '[a-q][^u-z]{13}x' mtent12.txt  # WE SLOW!! gcc -O3: 171.42045ms
 	#./bench 'Tom|Sawyer|Huckleberry|Finn' mtent12.txt  # WE SLOW!!  43.73897ms (18.01813ms)
 	#./bench '(?i)Tom|Sawyer|Huckleberry|Finn' mtent12.txt # WE SLOW!!  99.46298 (66.39118ms)
