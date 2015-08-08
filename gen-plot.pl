@@ -36,9 +36,14 @@ while (<$in>) {
             die "failed to stat $file.\n";
         }
         my $msize = sprintf("%.01f MB", $total_size / 1024 / 1024);
+        #warn "RE: $re";
+        my $n = ($re =~ s/(.{60,70}?.*?(?![\.\w*?[:^ascii:]]))/$1\n/g);
         $re =~ s{\\}{\\\\}g;
         $re =~ s{"}{\\"}g;
-        $title = "Benchmarking regex /$re/ matching file $file of size $msize";
+        #$re =~ s{`}{`perl -e 'print chr(96)'`}g;
+        $re =~ s{`}{\\\\x60}g;  # FIXME: I have no idea how to escape backticks properly in gnuplot.
+        $re =~ s{\n}{\\n}g;
+        $title = "Benchmarking regex /$re/" . ($n ? "\\n" : " ") . "matching file $file of size $msize";
         #print $out "$title\n";
         $found = 1;
     } elsif ($found && /^(\w+ .*?)\s*(?:match|error|no match)/) {
@@ -64,8 +69,6 @@ while (<$in>) {
 }
 close $in;
 
-$title =~ s/(.{70}.*?(?![\.\w]))/$1\\n/g;
-
 if (!@data) {
     die "No benchmark data found!";
 }
@@ -84,8 +87,9 @@ open my $out, ">$gnufile"
     or die "Cannot open $gnufile for writing: $!\n";
 
 print $out <<_EOC_;
-set terminal pngcairo background "#ffffff" fontscale 1.0 size 800, 500 enhanced font 'andale mono,10'
+set terminal pngcairo noenhanced background "#ffffff" fontscale 1.0 size 800, 500 enhanced font 'andale mono,10'
 
+set encoding utf8
 set boxwidth 1
 set grid
 set datafile separator ","

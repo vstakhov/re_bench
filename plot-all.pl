@@ -10,6 +10,7 @@ my $infile = "Makefile";
 open my $in, $infile
     or die "Cannot open $infile for reading: $!\n";
 my %files;
+my %vars;
 my @cmds;
 my %seen_cmds;
 my $found;
@@ -25,9 +26,11 @@ while (<$in>) {
         if (/^\S/) {
             last;
         }
-        if (m{^\t\@?\#?(\./bench\d*\s.+)}) {
-            my $cmd = $1;
+        if (m{^\t\@?\#?(?:export (\w+)=([^;]*);\s+)?(\./bench\d*\s.+)}) {
+            my ($var, $val, $cmd) = ($1, $2, $3);
+            $vars{$var} = $val;
             $cmd =~ s/\$\((FILE_\w+)\)/$files{$1}/eg;
+            $cmd =~ s{(\$\$(\w+))}{$vars{$2} // $1}eg;
             $cmd =~ s/\$\$/\$/g;
             $cmd =~ s/\s*\#.*//;
             if (!exists $seen_cmds{$cmd}) {
@@ -50,10 +53,11 @@ my @results;
 my $i = 0;
 for my $cmd (@cmds) {
     #last if $i >= 2;
-    if ($cmd =~ /\Q[a-q][^u-z]{13}x\E/ && !$ENV{SREGEX_BENCH_RUN_SLOW}) {
-        warn "Skipped regex $& since the environment SREGEX_BENCH_RUN_SLOW is unset.\n";
+    if ($cmd =~ /\Q([a-q][^u-z]{13}x)\E/ && !$ENV{SREGEX_BENCH_RUN_SLOW}) {
+        warn "Skipped regex $1 since the environment SREGEX_BENCH_RUN_SLOW is unset.\n";
         next;
     }
+    #warn "cmd: [$cmd]";
     my $pngfile = sprintf "images/re%0${num_width}d.png", $i;
     my $txtfile = "a.txt";
     (my $tag = $cmd) =~ s/\s+(?:gcc|clang)\s*$//g;
