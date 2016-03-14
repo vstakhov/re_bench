@@ -213,24 +213,6 @@ print $out <<_EOC_;
   <dd>$pcre2_ver</dd>
 _EOC_
 
-my $re2_rev;
-my $re2_dir = "../../re2";
-if (-d $re2_dir) {
-    $re2_rev = `cd $re2_dir && git rev-parse HEAD`
-        or die "Cannot get re2 git HEAD.\n";
-    $re2_rev = substr $re2_rev, 0, 10;
-    print $out <<_EOC_;
-      <dt><a href="https://github.com/google/re2/">RE2</a></dt>
-      <dd>git commit <a href="https://github.com/google/re2/commit/$re2_rev">$re2_rev</a></dd>
-_EOC_
-}
-
-my $sregex_rev = `git rev-parse HEAD` or die "Cannot get sregex git HEAD.\n";
-$sregex_rev = substr $sregex_rev, 0, 10;
-print $out <<_EOC_;
-  <dt><a href="https://github.com/openresty/sregex/tree/dfa/re.pl">SRegex DFA Prototype</a></dt>
-  <dd>git commit <a href="https://github.com/openresty/sregex/commit/$sregex_rev">$sregex_rev</a></dd>
-_EOC_
 
 print $out <<_EOC_;
 </dl>
